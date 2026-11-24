@@ -1,0 +1,306 @@
+{
+  "so_regras": {
+    "retidos": 56,
+    "tp": 54,
+    "fp": 2,
+    "fn": 46,
+    "precisao": 0.964,
+    "recall": 0.54,
+    "virais_retidos": 0,
+    "rs_retido_fraude": 10066.51,
+    "rs_retido_legitimo": 19.43
+  },
+  "so_modelo": {
+    "retidos": 84,
+    "tp": 80,
+    "fp": 4,
+    "fn": 20,
+    "precisao": 0.952,
+    "recall": 0.8,
+    "virais_retidos": 0,
+    "rs_retido_fraude": 15532.35,
+    "rs_retido_legitimo": 141.91
+  },
+  "combinado": {
+    "retidos": 90,
+    "tp": 85,
+    "fp": 5,
+    "fn": 15,
+    "precisao": 0.944,
+    "recall": 0.85,
+    "virais_retidos": 0,
+    "rs_retido_fraude": 16157.77,
+    "rs_retido_legitimo": 142.91
+  },
+  "agente": {
+    "dossies": 90,
+    "fallbacks": 0,
+    "pct_numero_inventado": 0.011,
+    "tempo_medio_seg": 14.6,
+    "confianca": {
+      "ALTA": 66,
+      "MEDIA": 21,
+      "BAIXA": 3
+    },
+    "fraude_recomendou_reter": 78,
+    "fraude_total": 85,
+    "legitimo_recomendou_liberar": 4,
+    "legitimo_total": 5
+  },
+  "por_tipo": {
+    "F1_AUTOCOMPRA|": {
+      "ALTO": 1.0,
+      "BAIXO": 0.0,
+      "MEDIO": 0.0,
+      "n": 16
+    },
+    "F1_AUTOCOMPRA|DISCRETA": {
+      "ALTO": 0.5,
+      "BAIXO": 0.25,
+      "MEDIO": 0.25,
+      "n": 4
+    },
+    "F2_REDE_PIX|": {
+      "ALTO": 1.0,
+      "BAIXO": 0.0,
+      "MEDIO": 0.0,
+      "n": 16
+    },
+    "F2_REDE_PIX|DISCRETA": {
+      "ALTO": 1.0,
+      "BAIXO": 0.0,
+      "MEDIO": 0.0,
+      "n": 4
+    },
+    "F3_COMPRA_ESTORNO|": {
+      "ALTO": 0.81,
+      "BAIXO": 0.19,
+      "MEDIO": 0.0,
+      "n": 16
+    },
+    "F3_COMPRA_ESTORNO|DISCRETA": {
+      "ALTO": 0.0,
+      "BAIXO": 0.75,
+      "MEDIO": 0.25,
+      "n": 4
+    },
+    "F4_CLIQUE_INFLADO|": {
+      "ALTO": 0.94,
+      "BAIXO": 0.06,
+      "MEDIO": 0.0,
+      "n": 16
+    },
+    "F4_CLIQUE_INFLADO|DISCRETA": {
+      "ALTO": 0.75,
+      "BAIXO": 0.25,
+      "MEDIO": 0.0,
+      "n": 4
+    },
+    "F5_CARTAO_TESTADO|": {
+      "ALTO": 0.94,
+      "BAIXO": 0.0,
+      "MEDIO": 0.06,
+      "n": 16
+    },
+    "F5_CARTAO_TESTADO|DISCRETA": {
+      "ALTO": 0.25,
+      "BAIXO": 0.75,
+      "MEDIO": 0.0,
+      "n": 4
+    },
+    "LEGITIMO_VIRAL|": {
+      "ALTO": 0.0,
+      "BAIXO": 1.0,
+      "MEDIO": 0.0,
+      "n": 30
+    },
+    "NENHUMA|": {
+      "ALTO": 0.0,
+      "BAIXO": 0.99,
+      "MEDIO": 0.01,
+      "n": 1000
+    },
+    "NENHUMA|RUIDO_CORPORATIVO": {
+      "ALTO": 0.0,
+      "BAIXO": 1.0,
+      "MEDIO": 0.0,
+      "n": 6
+    },
+    "NENHUMA|RUIDO_FAMILIA_DISP": {
+      "ALTO": 0.17,
+      "BAIXO": 0.75,
+      "MEDIO": 0.08,
+      "n": 12
+    },
+    "NENHUMA|RUIDO_PIX_CASAL": {
+      "ALTO": 0.0,
+      "BAIXO": 1.0,
+      "MEDIO": 0.0,
+      "n": 10
+    }
+  },
+  "falsos_positivos": [
+    {
+      "creator_id": "C0217",
+      "fraude_tipo": "NENHUMA",
+      "obs": "",
+      "score_final": 0.5527,
+      "prob_modelo": 0.5527,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C1376",
+      "fraude_tipo": "NENHUMA",
+      "obs": "",
+      "score_final": 0.5512,
+      "prob_modelo": 0.5512,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C1565",
+      "fraude_tipo": "NENHUMA",
+      "obs": "RUIDO_FAMILIA_DISP",
+      "score_final": 0.311,
+      "prob_modelo": 0.2517,
+      "regras_disparadas": "[\"R1_AUTOCOMPRA\"]"
+    },
+    {
+      "creator_id": "C1805",
+      "fraude_tipo": "NENHUMA",
+      "obs": "RUIDO_FAMILIA_DISP",
+      "score_final": 0.8354,
+      "prob_modelo": 0.8354,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C1937",
+      "fraude_tipo": "NENHUMA",
+      "obs": "",
+      "score_final": 0.5512,
+      "prob_modelo": 0.5512,
+      "regras_disparadas": "[]"
+    }
+  ],
+  "falsos_negativos": [
+    {
+      "creator_id": "C0138",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "DISCRETA",
+      "score_final": 0.0023,
+      "prob_modelo": 0.0023,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C0291",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "DISCRETA",
+      "score_final": 0.1502,
+      "prob_modelo": 0.0837,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C0451",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "",
+      "score_final": 0.0105,
+      "prob_modelo": 0.0105,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C0614",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "",
+      "score_final": 0.1038,
+      "prob_modelo": 0.0063,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C0652",
+      "fraude_tipo": "F1_AUTOCOMPRA",
+      "obs": "DISCRETA",
+      "score_final": 0.1768,
+      "prob_modelo": 0.1768,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C0843",
+      "fraude_tipo": "F1_AUTOCOMPRA",
+      "obs": "DISCRETA",
+      "score_final": 0.4168,
+      "prob_modelo": 0.4168,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C0865",
+      "fraude_tipo": "F4_CLIQUE_INFLADO",
+      "obs": "DISCRETA",
+      "score_final": 0.0001,
+      "prob_modelo": 0.0001,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C0987",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "",
+      "score_final": 0.1386,
+      "prob_modelo": 0.0643,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C1060",
+      "fraude_tipo": "F5_CARTAO_TESTADO",
+      "obs": "DISCRETA",
+      "score_final": 0.2757,
+      "prob_modelo": 0.2757,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C1097",
+      "fraude_tipo": "F4_CLIQUE_INFLADO",
+      "obs": "",
+      "score_final": 0.0001,
+      "prob_modelo": 0.0001,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C1227",
+      "fraude_tipo": "F5_CARTAO_TESTADO",
+      "obs": "DISCRETA",
+      "score_final": 0.0134,
+      "prob_modelo": 0.0134,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C1396",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "DISCRETA",
+      "score_final": 0.0033,
+      "prob_modelo": 0.0033,
+      "regras_disparadas": "[]"
+    },
+    {
+      "creator_id": "C1618",
+      "fraude_tipo": "F3_COMPRA_ESTORNO",
+      "obs": "DISCRETA",
+      "score_final": 0.4726,
+      "prob_modelo": 0.4726,
+      "regras_disparadas": "[\"R3_ESTORNO_POS_LIB\"]"
+    },
+    {
+      "creator_id": "C1656",
+      "fraude_tipo": "F5_CARTAO_TESTADO",
+      "obs": "",
+      "score_final": 0.4369,
+      "prob_modelo": 0.3615,
+      "regras_disparadas": "[\"R5_CARTAO_REPETIDO\", \"R6_CHARGEBACK_ALTO\"]"
+    },
+    {
+      "creator_id": "C1932",
+      "fraude_tipo": "F5_CARTAO_TESTADO",
+      "obs": "DISCRETA",
+      "score_final": 0.0028,
+      "prob_modelo": 0.0028,
+      "regras_disparadas": "[]"
+    }
+  ]
+}
