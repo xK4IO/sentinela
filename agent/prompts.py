@@ -56,7 +56,7 @@ _ROTULOS = {
     "taxa_reembolso": "taxa de reembolso", "taxa_chargeback": "taxa de chargeback",
     "mediana_seg_clique_compra": "mediana de segundos entre clique e compra",
     "conversao": "conversão (vendas/cliques)", "share_top_comprador": "participação do maior comprador",
-    "qtd_cartoes_repetidos": "cartões usados por 3+ compradores", "qtd_vendas": "vendas na janela",
+    "qtd_cartoes_repetidos": "cartões usados por 3+ compradores", "qtd_vendas": "vendas nos últimos 30 dias",
     "idade_conta_dias": "idade da conta (dias)", "crescimento_vendas_7d": "crescimento das vendas em 7 dias",
 }
 

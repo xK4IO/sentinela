@@ -14,15 +14,79 @@ import pandas as pd
 import config as C
 from agent.prompts import rotulo
 
-AGORA_DEMO = C.DATA_FIM
+# Relógio da demo: quinta-feira, 26/11 às 15h. Os pedidos pendentes foram feitos entre 20 e 22/11
+# (fim de semana), então o prazo de 48 horas ÚTEIS (doc de negócio, seção 5.3) está correndo.
+AGORA_DEMO = datetime(2026, 11, 26, 15, 0)
+URGENTE_HORAS_UTEIS = 9  # menos de 1 dia útil
+
+
+def horas_uteis(inicio: datetime, fim: datetime) -> float:
+    """Horas úteis (seg a sex, 9h às 18h) entre dois instantes."""
+    total, t = 0.0, inicio
+    while t < fim:
+        prox = min(fim, (t + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0))
+        if t.weekday() < 5 and 9 <= t.hour < 18:
+            total += (prox - t).total_seconds() / 3600
+        t = prox
+    return total
+# ---- Nomenclatura para o cliente: nenhum código interno (R1_, F2_, gabarito) aparece na tela ----
 NOMES_REGRAS = {
-    "R1_AUTOCOMPRA": "Autocompra", "R2_PIX_COMPARTILHADA": "Pix compartilhada",
-    "R3_ESTORNO_POS_LIB": "Estorno pós-liberação", "R4_CLIQUE_RELAMPAGO": "Clique relâmpago",
-    "R5_CARTAO_REPETIDO": "Cartão repetido", "R6_CHARGEBACK_ALTO": "Chargeback alto",
+    "R1_AUTOCOMPRA": "Autocompra",
+    "R2_PIX_COMPARTILHADA": "Chave Pix compartilhada",
+    "R3_ESTORNO_POS_LIB": "Reembolso após comissão paga",
+    "R4_CLIQUE_RELAMPAGO": "Compra segundos após o clique",
+    "R5_CARTAO_REPETIDO": "Cartão usado por várias pessoas",
+    "R6_CHARGEBACK_ALTO": "Muitas contestações de cartão",
     "R7_DISP_COMPARTILHADO": "Dispositivo compartilhado",
 }
-CONF = {"ALTA": "Alta", "MEDIA": "Média", "BAIXA": "Baixa"}
+NOMES_TIPOS = {
+    "F1_AUTOCOMPRA": "Autocompra",
+    "F2_REDE_PIX": "Rede de contas ligadas",
+    "F3_COMPRA_ESTORNO": "Compra seguida de reembolso",
+    "F4_CLIQUE_INFLADO": "Cliques artificiais",
+    "F5_CARTAO_TESTADO": "Cartão de terceiros",
+    "LEGITIMO_VIRAL": "Creator em alta (legítimo)",
+    "NENHUMA": "Sem fraude",
+}
+CONF = {"ALTA": "alta", "MEDIA": "média", "BAIXA": "baixa"}
 REC = {"MANTER_RETIDO": "Manter retido", "LIBERAR": "Liberar"}
+
+
+def texto_cliente(texto: str, mapa_provas: dict[str, int]) -> str:
+    """Troca referências internas da IA ("E4", "evidência E2") por "prova N" ou "dados de origem"."""
+    import re
+
+    def sub(m):
+        n = mapa_provas.get(f"E{m.group(2)}")
+        return f"prova {n}" if n else "dados de origem"
+    texto = re.sub(r"\b(evid[eê]ncia\s+)?E(\d+)\b", sub, texto, flags=re.IGNORECASE)
+    for cod, nome in NOMES_REGRAS.items():  # códigos de regra que a IA possa ter copiado
+        texto = texto.replace(cod, nome.lower())
+    # nomes de coluna em snake_case (ex.: total_vendas) viram texto legível
+    return re.sub(r"\b[a-z]+(?:_[a-z0-9]+)+\b", lambda m: nome_coluna(m.group(0)).lower(), texto)
+
+
+def valor_feature(feature: str, v) -> str:
+    """Formata o valor de um indicador do jeito que uma pessoa leria."""
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return "sem informação"
+    if feature.startswith(("score_", "prob_")):
+        return f"{min(round(v * 100), 99):d}%"
+    if feature.startswith(("taxa_", "pct_", "share_")) or feature == "conversao":
+        return f"{round(v * 100):d}%"
+    if feature == "mediana_seg_clique_compra":
+        return f"{v:.0f} s"
+    if feature == "idade_conta_dias":
+        return f"{v:.0f} dias"
+    if feature == "crescimento_vendas_7d":
+        return f"{v:.1f}×".replace(".", ",")
+    return f"{v:.0f}"
+
+
+def nome_coluna(c: str) -> str:
+    """total_vendas → Total vendas; usa os rótulos amigáveis das features quando existem."""
+    r = rotulo(c)
+    return r[0].upper() + r[1:] if r != c else c.replace("_", " ").capitalize()
 
 
 def conectar() -> sqlite3.Connection:
@@ -35,11 +99,11 @@ def brl(v: float | None) -> str:
     return "R$ " + f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def sinais(regras: list[str], shap: list[dict]) -> str:
+def sinais(regras: list[str], shap: list[dict]) -> list[str]:
     if regras:
-        return ", ".join(NOMES_REGRAS.get(r, r) for r in regras)
+        return [NOMES_REGRAS.get(r, r) for r in regras]
     pos = [s for s in shap if s["shap"] > 0]
-    return f"Modelo: {rotulo(pos[0]['feature'])}" if pos else "Modelo"
+    return [f"Padrão atípico: {rotulo(pos[0]['feature'])}"] if pos else ["Padrão atípico"]
 
 
 def _alertas(con: sqlite3.Connection, where: str) -> pd.DataFrame:
@@ -56,10 +120,12 @@ def _alertas(con: sqlite3.Connection, where: str) -> pd.DataFrame:
     df["regras"] = df.regras_disparadas.apply(json.loads)
     df["shap"] = df.shap_top.apply(lambda s: json.loads(s) if s else [])
     df["sinais"] = [sinais(r, s) for r, s in zip(df.regras, df.shap)]
-    prazo = df.solicitado_em + timedelta(hours=C.PRAZO_RETENCAO_HORAS)
-    df["horas_restantes"] = ((prazo - AGORA_DEMO).dt.total_seconds() / 3600).clip(lower=0).round(0)
+    decorridas = df.solicitado_em.apply(lambda t: horas_uteis(t.to_pydatetime(), AGORA_DEMO))
+    df["horas_restantes"] = (C.PRAZO_RETENCAO_HORAS - decorridas).clip(lower=0).round(0)
     det = df.detalhes.apply(lambda d: json.loads(d) if isinstance(d, str) else {})
     df["fallback"] = det.apply(lambda d: d.get("fallback", False))
+    df["numero_inventado"] = det.apply(lambda d: d.get("numero_inventado", False))
+    df["profundidade"] = det.apply(lambda d: d.get("profundidade"))
     return df
 
 
@@ -148,9 +214,19 @@ def metricas(con) -> dict:
     det = dos.detalhes.apply(lambda x: json.loads(x) if isinstance(x, str) else {})
     ok = dos[~det.apply(lambda x: x.get("fallback", False))]
     num_inv = det[~det.apply(lambda x: x.get("fallback", False))].apply(lambda x: x.get("numero_inventado", False))
-    por_tipo = (d[alto].assign(tipo=lambda x: x.fraude_tipo.where(x.fraude, "Legítimo (falso alarme)"))
+    por_tipo = (d[alto].assign(tipo=lambda x: x.fraude_tipo.map(NOMES_TIPOS)
+                               .where(x.fraude, "Retido sem necessidade"))
                 .groupby("tipo").size().sort_values(ascending=False))
+    ia = pd.read_sql("""SELECT d.recomendacao, d.detalhes, g.fraude_tipo FROM dossies d
+                        JOIN alertas a USING (alerta_id) JOIN gabarito g USING (creator_id)""", con)
+    ia = ia[~ia.detalhes.apply(lambda x: json.loads(x).get("fallback", False) if isinstance(x, str) else False)]
+    ia_fraude = ia.fraude_tipo.isin(FRAUDE)
     return {
+        "ia_reteve_fraude": int((ia_fraude & ia.recomendacao.eq("MANTER_RETIDO")).sum()),
+        "ia_fraudes": int(ia_fraude.sum()),
+        "ia_liberou_legit": int((~ia_fraude & ia.recomendacao.eq("LIBERAR")).sum()),
+        "ia_legitimos": int((~ia_fraude).sum()),
+        "virais_total": int(d.fraude_tipo.eq("LEGITIMO_VIRAL").sum()),
         "avaliados": len(d), "retidos": int(alto.sum()), "tp": tp, "fp": fp, "fn": fn,
         "precisao": tp / max(1, tp + fp), "recall": tp / max(1, tp + fn),
         "rs_fraude": float(d.loc[alto & d.fraude, "valor"].sum()),
