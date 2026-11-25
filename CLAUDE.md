@@ -28,7 +28,7 @@ cada pedido de saque de creator **antes de o dinheiro sair**. Quando há sinais 
 .\.venv\Scripts\python.exe evaluate.py              # métricas → data/metricas.json
 .\.venv\Scripts\python.exe -m agent.batch_dossies   # relatórios com o Gemini (--limite N, --alerta ID, --refazer)
 .\.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py   # http://localhost:8501
-.\.venv\Scripts\python.exe -m pytest -q -p no:warnings             # 56 testes
+.\.venv\Scripts\python.exe -m pytest -q -p no:warnings             # 60 testes
 ```
 Para saída com acento no terminal, defina `$env:PYTHONIOENCODING="utf-8"` antes de rodar.
 

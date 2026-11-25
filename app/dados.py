@@ -52,8 +52,39 @@ CONF = {"ALTA": "alta", "MEDIA": "média", "BAIXA": "baixa"}
 REC = {"MANTER_RETIDO": "Manter retido", "LIBERAR": "Liberar"}
 
 
-def texto_cliente(texto: str, mapa_provas: dict[str, int]) -> str:
-    """Troca referências internas da IA ("E4", "evidência E2") por "prova N" ou "dados de origem"."""
+def _feminino(palavra: str) -> str:
+    """confirmados → confirmadas; associado → associada (só particípios -ado/-ido)."""
+    import re
+    return re.sub(r"([ai]d)o(s?)$", r"\1a\2", palavra)
+
+
+def _sem_chargeback(texto: str) -> str:
+    """A tela usa "contestação de cartão" (glossário), mas a IA escreve "chargeback".
+    Como "contestação" é feminino, os particípios vizinhos precisam concordar:
+    "2 chargebacks confirmados" → "2 contestações de cartão confirmadas"."""
+    import re
+    # particípio ANTES do número: "registrados 2 chargebacks" → "registradas 2 ..."
+    texto = re.sub(r"\b(\w+[ai]dos?)(\s+\d+\s+chargebacks?)\b",
+                   lambda m: _feminino(m.group(1)) + m.group(2), texto, flags=re.IGNORECASE)
+    # particípio DEPOIS: "chargeback associado" → "... associada"
+    texto = re.sub(r"\b(chargebacks?)(\s+)(\w+[ai]dos?)\b",
+                   lambda m: m.group(1) + m.group(2) + _feminino(m.group(3)), texto, flags=re.IGNORECASE)
+    texto = re.sub(r"\bum chargeback\b", "uma contestação de cartão", texto, flags=re.IGNORECASE)
+    texto = re.sub(r"\bchargebacks\b", "contestações de cartão", texto, flags=re.IGNORECASE)
+    return re.sub(r"\bchargeback\b", "contestação de cartão", texto, flags=re.IGNORECASE)
+
+
+def texto_cliente(texto: str, mapa_provas: dict[str, int], na_prova: bool = False) -> str:
+    """Deixa o texto da IA na linguagem da tela.
+
+    - "E4", "evidência E2" → "prova N" (ou "dados de origem" se a evidência não virou prova);
+    - códigos de regra e nomes de coluna → nomes de cliente;
+    - "chargeback" → "contestação de cartão" (mesmo termo dos chips de sinal);
+    - "697,13 dias" → "697 dias" (ninguém conta idade de conta com centavos de dia);
+    - na_prova=True: remove parênteses que só apontam para provas, como "(prova 1)" dentro
+      da própria prova 1. Fora das provas a referência é útil e fica.
+    A troca é só de exibição: o banco guarda o texto original, que é o que a checagem auditou.
+    """
     import re
 
     def sub(m):
@@ -63,7 +94,15 @@ def texto_cliente(texto: str, mapa_provas: dict[str, int]) -> str:
     for cod, nome in NOMES_REGRAS.items():  # códigos de regra que a IA possa ter copiado
         texto = texto.replace(cod, nome.lower())
     # nomes de coluna em snake_case (ex.: total_vendas) viram texto legível
-    return re.sub(r"\b[a-z]+(?:_[a-z0-9]+)+\b", lambda m: nome_coluna(m.group(0)).lower(), texto)
+    texto = re.sub(r"\b[a-z]+(?:_[a-z0-9]+)+\b", lambda m: nome_coluna(m.group(0)).lower(), texto)
+    texto = _sem_chargeback(texto)
+    texto = re.sub(r"\b(\d+)[.,]\d+(\s+dias)\b", r"\1\2", texto)
+    if na_prova:
+        def so_ref(m):
+            resto = re.sub(r"prova \d+|dados de origem|conforme|\b(?:a|e|os|as|nos|na)\b|[,\s]", "", m.group(1))
+            return "" if not resto else m.group(0)
+        texto = re.sub(r"\s*\(([^()]*)\)", so_ref, texto)
+    return texto
 
 
 def valor_feature(feature: str, v) -> str:
@@ -214,8 +253,8 @@ def metricas(con) -> dict:
     det = dos.detalhes.apply(lambda x: json.loads(x) if isinstance(x, str) else {})
     ok = dos[~det.apply(lambda x: x.get("fallback", False))]
     num_inv = det[~det.apply(lambda x: x.get("fallback", False))].apply(lambda x: x.get("numero_inventado", False))
-    por_tipo = (d[alto].assign(tipo=lambda x: x.fraude_tipo.map(NOMES_TIPOS)
-                               .where(x.fraude, "Retido sem necessidade"))
+    # Só fraudes confirmadas: "retido sem necessidade" não é tipo de fraude e já tem cartão próprio.
+    por_tipo = (d[alto & d.fraude].assign(tipo=lambda x: x.fraude_tipo.map(NOMES_TIPOS))
                 .groupby("tipo").size().sort_values(ascending=False))
     ia = pd.read_sql("""SELECT d.recomendacao, d.detalhes, g.fraude_tipo FROM dossies d
                         JOIN alertas a USING (alerta_id) JOIN gabarito g USING (creator_id)""", con)
@@ -224,6 +263,7 @@ def metricas(con) -> dict:
     return {
         "ia_reteve_fraude": int((ia_fraude & ia.recomendacao.eq("MANTER_RETIDO")).sum()),
         "ia_fraudes": int(ia_fraude.sum()),
+        "ia_liberou_fraude": int((ia_fraude & ia.recomendacao.eq("LIBERAR")).sum()),
         "ia_liberou_legit": int((~ia_fraude & ia.recomendacao.eq("LIBERAR")).sum()),
         "ia_legitimos": int((~ia_fraude).sum()),
         "virais_total": int(d.fraude_tipo.eq("LEGITIMO_VIRAL").sum()),

@@ -81,10 +81,6 @@ with c_aj:
 
 # ---------------------------------------------------------------------------- caso
 def grafo_rede(rede: dict, investigado: str):
-    if not rede or not rede.get("creators_ligados"):
-        st.html('<p style="color:var(--muted);margin:4px 0 0;font-size:.88rem">Nenhuma conta ligada por chave Pix '
-                'ou dispositivo de acesso.</p>')
-        return
     L = ['graph { rankdir=LR; bgcolor="transparent"; pad=0.2; nodesep=0.35; ranksep=0.55;',
          'node [fontname="Helvetica", fontsize=11, penwidth=1.4]; edge [color="#A9B4C4", penwidth=1.2];']
     for n in rede["nos"]:
@@ -150,17 +146,11 @@ def tela_caso(alerta_id: int):
     st.html(U.cabecalho_caso(a["nome"], a["creator_id"], meta, a["score_final"], a["prob_modelo"], a["score_regras"]))
 
     if det:
-        analise = "Aprofundada" if profundidade == "completa" else "Rápida"
-        desc = ("Caso ambíguo: a análise levantou hipóteses e consultou os dados"
-                if profundidade == "completa" else "Sinais fortes e consistentes: provas padrão bastaram")
         st.html(U.fatos([
-            U.fato("Recomendação da análise", U.recomendacao(a["recomendacao"]), "shield-check"),
-            U.fato("Confiança", U.confianca(a["confianca"]), "target", 60),
-            U.fato("Tipo de análise", f'<b>{analise}</b><div style="font-size:.76rem;color:var(--muted);margin-top:4px">'
-                                      f'{U.esc(desc)}</div>', "layers", 120),
+            U.fato("Recomendação da análise", U.recomendacao(a["recomendacao"], a["confianca"]), "shield-check"),
             U.fato("Sinais identificados", f'<div class="sx-tags" style="margin-top:8px">{U.tags(a["sinais"])}</div>',
-                   "eye", 180),
-        ]))
+                   "eye", 60),
+        ], colunas="1.2fr 1fr"))
         if det.get("fallback"):
             st.html(U.aviso("A análise automática não pôde ser concluída. O relatório mostra apenas os sinais calculados; "
                             "revise os dados de origem antes de decidir."))
@@ -177,21 +167,22 @@ def tela_caso(alerta_id: int):
             for i, x in enumerate(det["afirmacoes"], 1):
                 mapa.setdefault(x["evidencia_id"], i)
             st.html(U.titulo("Resumo"))
-            st.html(U.cartao("Relatório de investigação", f'<p>{U.esc(D.texto_cliente(det["resumo"], mapa))}</p>', "file"))
+            st.html(U.cartao(f'<p>{U.esc(D.texto_cliente(det["resumo"], mapa))}</p>'))
             st.html(U.titulo("Provas", f"{len(det['afirmacoes'])} itens · cada um com os dados de origem"))
             for i, x in enumerate(det["afirmacoes"], 1):
                 with st.container(key=f"box_prova_{i}"):
-                    st.html(U.prova(i, D.texto_cliente(x["texto"], mapa)))
+                    st.html(U.prova(i, D.texto_cliente(x["texto"], mapa, na_prova=True)))
                     ev = a["evidencias"].get(x["evidencia_id"])
                     if ev:
                         with st.expander("Ver dados de origem", icon=":material/database:"):
                             dados_origem(ev)
             st.html(U.titulo("Justificativa"))
-            st.html(U.cartao("Por que esta recomendação", f'<p>{U.esc(D.texto_cliente(det["justificativa"], mapa))}</p>',
-                             "info"))
+            st.html(U.cartao(f'<p>{U.esc(D.texto_cliente(det["justificativa"], mapa))}</p>'))
             llm_sql = [s for s in a["sql_executadas"] if s["origem"] == "llm"]
             if llm_sql:
-                st.html(U.titulo("Auditoria", "consultas feitas pela análise automática"))
+                tipo = ("análise aprofundada: caso ambíguo, a IA levantou hipóteses e consultou os dados"
+                        if profundidade == "completa" else "análise rápida: sinais fortes, consultas padrão bastaram")
+                st.html(U.titulo("Auditoria", tipo))
                 with st.expander(f"{len(llm_sql)} consultas registradas", icon=":material/fact_check:"):
                     for s in llm_sql:
                         situacao = {"ok": "Executada", "rejeitada": "Bloqueada pela política de segurança",
@@ -211,12 +202,15 @@ def tela_caso(alerta_id: int):
         itens = [{"rotulo": rotulo(s["feature"])[0].upper() + rotulo(s["feature"])[1:],
                   "valor_txt": D.valor_feature(s["feature"], s["valor"]),
                   "impacto": abs(s["shap"]) / mx, "aumenta": s["shap"] > 0} for s in a["shap"]]
-        st.html(U.cartao("Fatores do modelo de risco", U.barras_fatores(itens), "trend"))
+        st.html(U.cartao(U.barras_fatores(itens)))
 
         st.html(U.titulo("Rede de contas"))
-        with st.container(key="box_rede"):
-            rede = det["rede"] if det else D.rede_sem_dossie(a["creator_id"], f"{a['solicitado_em']:%Y-%m-%d %H:%M:%S}")
-            grafo_rede(rede, a["creator_id"])
+        rede = det["rede"] if det else D.rede_sem_dossie(a["creator_id"], f"{a['solicitado_em']:%Y-%m-%d %H:%M:%S}")
+        if rede and rede.get("creators_ligados"):
+            with st.container(key="box_rede"):
+                grafo_rede(rede, a["creator_id"])
+        else:
+            st.html('<p class="sx-empty">Nenhuma conta ligada por chave Pix ou dispositivo de acesso.</p>')
 
         st.html(U.titulo("Decisão"))
         with st.container(key="box_decisao"):
@@ -275,7 +269,7 @@ def pagina_fila():
     df = _fila()
     prontos = int(df.dossie_id.notna().sum())
     st.html(U.kpis([
-        U.kpi("Saques em análise", str(len(df)), "aguardando decisão do analista", "shield", accent=True),
+        U.kpi("Saques em análise", str(len(df)), "aguardando decisão do analista", "shield"),
         U.kpi("Valor em análise", D.brl(df.valor.sum()), "retido até a decisão", "wallet", atraso=60),
         U.kpi("Prazo próximo do fim", str(int(df.horas_restantes.lt(D.URGENTE_HORAS_UTEIS).sum())), "vencem em menos de 1 dia útil",
               "hourglass", atraso=120),
@@ -285,7 +279,8 @@ def pagina_fila():
 
     f1, f2, f3, f4 = st.columns([2.2, 1, 1.2, 1.2], vertical_alignment="bottom")
     sinais = f1.multiselect("Sinais", list(D.NOMES_REGRAS.values()), placeholder="Todos os sinais")
-    vmin = f2.number_input("Saque a partir de (R$)", min_value=0.0, step=50.0, format="%.0f")
+    faixas = {"Qualquer valor": 0, "A partir de R$ 100": 100, "A partir de R$ 500": 500, "A partir de R$ 1.000": 1000}
+    vmin = faixas[f2.selectbox("Valor do saque", list(faixas))]
     busca = f3.text_input("Buscar creator", placeholder="Nome ou código")
     ordem = f4.selectbox("Ordenar por", ["Maior risco", "Prazo mais curto", "Maior valor"])
 
@@ -295,11 +290,16 @@ def pagina_fila():
     if busca.strip():
         b = busca.strip()
         df = df[df.creator_id.str.contains(b, case=False) | df.nome.str.contains(b, case=False)]
-    chave = {"Maior risco": ("score_final", False), "Prazo mais curto": ("horas_restantes", True),
-             "Maior valor": ("valor", False)}[ordem]
-    df = df.sort_values(chave[0], ascending=chave[1]).reset_index(drop=True)
+    # Critério de desempate: muitos casos empatam em 99%, então o segundo critério decide a ordem.
+    # Sem ele, um caso com 6 h de prazo podia ficar atrás de outro com 15 h.
+    chaves = {"Maior risco": (["risco_tela", "horas_restantes", "valor"], [False, True, False]),
+              "Prazo mais curto": (["horas_restantes", "risco_tela"], [True, False]),
+              "Maior valor": (["valor", "risco_tela"], [False, False])}[ordem]
+    df = df.assign(risco_tela=df.score_final.clip(upper=0.99).round(2))  # empata como a tela mostra (99%)
+    df = df.sort_values(chaves[0], ascending=chaves[1]).reset_index(drop=True)
 
-    st.html(U.titulo("Fila de análise", f"{len(df)} casos · ordenados por {ordem.lower()}"))
+    st.html(U.titulo("Fila de análise", f"{len(df)} casos · ordenados por {ordem.lower()}"
+                       + (" e, no empate, prazo" if ordem == "Maior risco" else "")))
     if df.empty:
         st.html(U.aviso("Nenhum caso com esses filtros.", "info"))
         return
@@ -350,7 +350,7 @@ def pagina_resultados():
     st.html(U.titulo("Proteção", f"{m['avaliados']:,} saques avaliados".replace(",", ".")))
     st.html(U.kpis([
         U.kpi("Fraudes identificadas", U.pct(m["recall"]), f"{m['tp']} de {m['tp'] + m['fn']} casos · meta 85%",
-              "target", accent=True, barra=m["recall"], cor_barra=U.NAVY, meta=0.85),
+              "target", barra=m["recall"], cor_barra=U.NAVY, meta=0.85),
         U.kpi("Acerto nas retenções", U.pct(m["precisao"]), f"{m['tp']} de {m['retidos']} retidos · meta 80%",
               "shield-check", barra=m["precisao"], cor_barra=U.NAVY, meta=0.80, atraso=60),
         U.kpi("Valor protegido", D.brl(m["rs_fraude"]), "comissões de fraude que não saíram", "wallet", atraso=120),
@@ -366,27 +366,31 @@ def pagina_resultados():
         cards.append(U.kpi("Relatórios com dados conferidos", U.pct(conf), "todo número citado vem dos dados · meta 95%",
                            "file", barra=conf, cor_barra=U.LIME, meta=0.95, atraso=60))
     if m["tempo_medio"] is not None:
+        # sem barra: aqui menor é melhor, e uma barra curta parecia resultado ruim
         cards.append(U.kpi("Tempo médio de investigação", f"{m['tempo_medio']:.0f} s", "por caso · meta abaixo de 60 s",
-                           "bolt", barra=m["tempo_medio"] / 60, cor_barra=U.LIME, atraso=120))
-    cards.append(U.kpi("Decisões registradas", str(m["decisoes"]),
-                       f"{m['liberados']} liberadas · {m['negados']} negadas", "check", atraso=180))
+                           "bolt", atraso=120))
+    if m["decisoes"]:  # na demo zerada o cartão só mostraria "0"
+        cards.append(U.kpi("Decisões registradas", str(m["decisoes"]),
+                           f"{m['liberados']} liberadas · {m['negados']} negadas", "check", atraso=180))
     st.html(U.titulo("Qualidade da análise"))
     st.html(U.kpis(cards))
 
     c1, c2 = st.columns(2, gap="large")
     with c1:
-        st.html(U.titulo("Saques retidos por tipo de fraude"))
-        itens = list(m["por_tipo"].items())
-        st.html(U.cartao("Casos em análise", U.barras_simples(itens), "layers"))
+        st.html(U.titulo("Fraudes retidas por tipo", f"{m['tp']} casos"))
+        st.html(U.cartao(U.barras_simples(list(m["por_tipo"].items()))))
     with c2:
         st.html(U.titulo("Recomendações da análise automática"))
         f, lg = m["ia_fraudes"], m["ia_legitimos"]
         corpo = U.barras_proporcao([
             ("Fraudes com recomendação de manter retido", m["ia_reteve_fraude"], f),
             ("Retidos sem necessidade com recomendação de liberar", m["ia_liberou_legit"], lg),
-        ], cor=U.LIME) + ('<p style="margin-top:14px;font-size:.84rem;color:var(--muted)">A análise automática recomenda; '
-                          'a decisão final é sempre do analista, que confere os dados de origem de cada prova.</p>')
-        st.html(U.cartao("Análise automática × resultado confirmado", corpo, "shield-check"))
+        ], cor=U.LIME)
+        # O argumento central para manter o humano no circuito: dito com todas as letras, não só numa barra.
+        destaque = (f'<div class="sx-note" style="margin-top:16px"><div><b>Seguida sem revisão, a análise automática '
+                    f'teria liberado {m["ia_liberou_fraude"]} fraudadores.</b> Por isso ela só recomenda: a decisão '
+                    f'final é sempre do analista, que confere os dados de origem de cada prova.</div></div>')
+        st.html(U.cartao(corpo + destaque))
 
 
 # ---------------------------------------------------------------------------- roteamento

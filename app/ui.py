@@ -93,22 +93,25 @@ header[data-testid="stHeader"] {{ background: transparent; height: 0; }}
 @keyframes sx-rise {{ from {{ opacity: 0; transform: translateY(8px); }} to {{ opacity: 1; transform: none; }} }}
 @keyframes sx-grow {{ from {{ width: 0; }} }}
 @keyframes sx-ring {{ from {{ stroke-dashoffset: var(--len); }} }}
-@keyframes sx-pulse {{ 0%,100% {{ opacity: 1; }} 50% {{ opacity: .45; }} }}
 
 /* barra superior */
-.sx-top {{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:6px; animation: sx-rise .4s ease both; }}
+.sx-top {{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:6px; animation: sx-rise .4s ease both; }}
 .sx-brand {{ display:flex; align-items:center; gap:12px; }}
 .sx-brand img {{ width:40px; height:40px; border-radius:10px; }}
 .sx-brand b {{ display:block; font-size:1.15rem; font-weight:800; color:var(--navy); letter-spacing:-.01em; }}
 .sx-brand span {{ font-size:.8rem; color:var(--muted); }}
 .sx-chip {{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; background:#fff;
            border:1px solid var(--border); font-size:.78rem; color:var(--muted); font-weight:500; white-space:nowrap; }}
-.sx-dot {{ width:7px; height:7px; border-radius:50%; background:var(--lime); animation: sx-pulse 2.4s ease-in-out infinite; }}
 
 /* navegação (segmented control) */
 div[data-testid="stButtonGroup"] button {{ font-weight:600; }}
 div[data-testid="stButtonGroup"] button[aria-checked="true"], div[data-testid="stButtonGroup"] button[kind*="Active"] {{
   box-shadow: inset 0 -2px 0 var(--lime); }}
+/* aba ativa com um visual só: antes o fundo escurecia no foco/hover depois do clique */
+div[data-testid="stButtonGroup"] button[aria-checked="true"],
+div[data-testid="stButtonGroup"] button[aria-checked="true"]:hover,
+div[data-testid="stButtonGroup"] button[aria-checked="true"]:focus {{
+  background:#fff !important; border-color:var(--border) !important; color:var(--navy) !important; }}
 
 /* títulos de seção */
 .sx-h {{ display:flex; align-items:baseline; justify-content:space-between; margin:18px 0 10px; }}
@@ -123,7 +126,6 @@ div[data-testid="stButtonGroup"] button[aria-checked="true"], div[data-testid="s
 .sx-kpi .lbl {{ display:flex; align-items:center; gap:7px; color:var(--muted); font-size:.8rem; font-weight:600; }}
 .sx-kpi .val {{ font-size:1.65rem; font-weight:800; color:var(--navy); letter-spacing:-.02em; margin-top:6px; line-height:1.15; }}
 .sx-kpi .sub {{ font-size:.78rem; color:var(--muted); margin-top:4px; }}
-.sx-kpi.accent::before {{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--lime); }}
 .sx-bar {{ height:6px; background:var(--subtle); border-radius:99px; margin-top:10px; position:relative; overflow:visible; }}
 .sx-bar > i {{ display:block; height:100%; border-radius:99px; animation: sx-grow .9s cubic-bezier(.2,.7,.2,1) both; }}
 .sx-bar > em {{ position:absolute; top:-4px; width:2px; height:14px; background:var(--navy); opacity:.55; border-radius:2px; }}
@@ -140,12 +142,15 @@ div[class*="st-key-row_"] button {{ white-space:nowrap; }}
 .sx-tag {{ font-size:.72rem; font-weight:600; color:{NAVY_2}; background:var(--subtle); padding:3px 9px; border-radius:999px; }}
 .sx-tag.model {{ background:#F1EEFB; color:#5B4B9A; }}
 .sx-cell small {{ display:block; color:var(--muted); font-size:.72rem; font-weight:500; margin-bottom:2px; }}
-.sx-cell b {{ color:var(--ink); font-weight:700; font-size:.92rem; }}
+.sx-cell b {{ color:var(--ink); font-weight:700; font-size:.92rem; white-space:nowrap; }}
 .sx-cell .warn {{ color:#C0571F; }}
 .sx-cell .row {{ display:flex; align-items:center; gap:6px; }}
 .sx-status {{ display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:600; color:var(--ink); }}
 .sx-status i {{ width:8px; height:8px; border-radius:50%; display:inline-block; }}
-@media (max-width: 900px) {{ .sx-row {{ grid-template-columns: 52px 1fr 1fr; }} .sx-row .hide-sm {{ display:none; }} }}
+.sx-row.obs {{ grid-template-columns: 58px 1fr 160px; }}
+.sx-row.obs .sx-cell {{ text-align:right; }}
+.sx-status.quiet {{ color:var(--muted); font-weight:500; }}
+@media (max-width: 900px) {{ .sx-row, .sx-row.obs {{ grid-template-columns: 52px 1fr 1fr; }} .sx-row .hide-sm {{ display:none; }} .sx-who b {{ white-space:nowrap; }} }}
 
 /* anel de risco */
 .sx-ring {{ position:relative; width:52px; height:52px; }}
@@ -159,7 +164,8 @@ div[class*="st-key-box_"] .sx-card {{ border:none; padding:0; animation:none; }}
 
 /* cartões genéricos */
 .sx-card {{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px 20px; animation: sx-rise .45s ease both; }}
-.sx-card p {{ margin:0; color:var(--ink); line-height:1.6; }}
+.sx-card p {{ margin:0; color:var(--ink); line-height:1.6; max-width:72ch; }}
+.sx-kpi .val, .sx-cell b, .sx-hbar .t span, .sx-meta b, .sx-gauge .num, .sx-table td {{ font-variant-numeric: tabular-nums; }}
 .sx-card .eyebrow {{ font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:6px; }}
 
 /* cabeçalho do caso */
@@ -179,11 +185,17 @@ div[class*="st-key-box_"] .sx-card {{ border:none; padding:0; animation:none; }}
 .sx-fact small {{ display:flex; align-items:center; gap:6px; color:var(--muted); font-size:.75rem; font-weight:600; }}
 .sx-fact b {{ display:block; margin-top:6px; font-size:1.05rem; font-weight:800; color:var(--navy); }}
 .sx-pill {{ display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; font-size:.85rem; font-weight:700; }}
+.sx-rec {{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-top:8px; }}
+.sx-rec .sx-pill {{ font-size:1rem; padding:7px 14px; }}
+.sx-rec .conf {{ min-width:120px; }}
+.sx-rec .conf b {{ margin-top:0; font-size:.9rem; }}
 .sx-pill.hold {{ background:#FDECEB; color:#B23A35; }}
 .sx-pill.free {{ background:{LIME_TINT}; color:#3E7A12; }}
 .sx-meter {{ display:flex; gap:4px; margin-top:8px; }}
 .sx-meter i {{ flex:1; height:6px; border-radius:99px; background:var(--subtle); }}
 .sx-meter i.on {{ background:var(--navy); }}
+
+.sx-empty {{ color:var(--muted); font-size:.86rem; margin:-2px 0 4px; }}
 
 /* avisos */
 .sx-note {{ display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:12px; background:#FFF6EC;
@@ -194,7 +206,7 @@ div[class*="st-key-box_"] .sx-card {{ border:none; padding:0; animation:none; }}
 .sx-proof {{ display:flex; gap:12px; align-items:flex-start; }}
 .sx-proof .n {{ flex:0 0 26px; height:26px; border-radius:8px; background:var(--navy); color:#fff; font-size:.78rem; font-weight:800;
                display:flex; align-items:center; justify-content:center; margin-top:1px; }}
-.sx-proof p {{ margin:0; line-height:1.55; color:var(--ink); }}
+.sx-proof p {{ margin:0; line-height:1.55; color:var(--ink); max-width:72ch; }}
 
 /* barras horizontais (fatores, tipos) */
 .sx-hbars {{ display:flex; flex-direction:column; gap:12px; }}
@@ -227,7 +239,6 @@ def topo(analista: str, relogio: str) -> str:
     return (f'<div class="sx-top"><div class="sx-brand"><img src="data:image/png;base64,{logo_b64()}" alt="YouShop">'
             f'<div><b>Sentinela</b><span>Proteção de saques · Operações</span></div></div>'
             f'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-            f'<span class="sx-chip"><i class="sx-dot"></i>Monitorando saques</span>'
             f'<span class="sx-chip">{icon("clock", 13)}{esc(relogio)}</span>'
             f'<span class="sx-chip">{icon("users", 13)}{esc(analista)}</span></div></div>')
 
@@ -236,13 +247,13 @@ def titulo(texto: str, sub: str = "") -> str:
     return f'<div class="sx-h"><h3>{esc(texto)}</h3><span>{esc(sub)}</span></div>'
 
 
-def kpi(rotulo: str, valor: str, sub: str = "", ic: str = "layers", accent: bool = False,
+def kpi(rotulo: str, valor: str, sub: str = "", ic: str = "layers",
         barra: float | None = None, cor_barra: str = NAVY, meta: float | None = None, atraso: int = 0) -> str:
     bar = ""
     if barra is not None:
         marca = f'<em style="left:{meta * 100:.1f}%"></em>' if meta is not None else ""
         bar = f'<div class="sx-bar"><i style="width:{max(0, min(1, barra)) * 100:.1f}%;background:{cor_barra}"></i>{marca}</div>'
-    return (f'<div class="sx-kpi{" accent" if accent else ""}" style="animation-delay:{atraso}ms">'
+    return (f'<div class="sx-kpi" style="animation-delay:{atraso}ms">'
             f'<div class="lbl">{icon(ic, 15)}{esc(rotulo)}</div><div class="val">{esc(valor)}</div>'
             f'<div class="sub">{esc(sub)}</div>{bar}</div>')
 
@@ -298,21 +309,24 @@ def linha_fila(r: dict) -> str:
         urgente = prazo_h < r.get("urgente", 9)
         prazo = (f'<div class="row">{icon("hourglass", 14, "#C0571F" if urgente else MUTED)}'
                  f'<b class="{"warn" if urgente else ""}">{prazo_h} h úteis</b></div>')
+    cabeca = (f'<div>{anel(r["risco"])}</div>'
+              f'<div class="sx-who"><b>{esc(r["nome"])}</b><small>{esc(r["creator_id"])}</small>'
+              f'<div class="sx-tags">{tags(r["sinais"], r["so_modelo"])}</div></div>'
+              f'<div class="sx-cell"><small>Saque</small><b>{esc(r["valor"])}</b></div>')
     if r["relatorio"] == "obs":
-        st_cor, st_txt = "#E9A23B", "Em observação"
-    elif r["relatorio"] == "pronto":
-        st_cor, st_txt = LIME, f"Pronto · confiança {r['confianca']}"
-    elif r["relatorio"] == "parcial":
-        st_cor, st_txt = "#E9A23B", "Parcial · revisar"
+        # Em observação todo saque está pago e todo creator está em observação: repetir isso em
+        # cada linha não informa nada (o aviso do topo já diz). Sobra espaço para o sinal.
+        return f'<div class="sx-row obs">{cabeca}</div>'
+    # Só a exceção ganha cor. Se toda linha tem bolinha verde, o olho deixa de ver a que importa.
+    if r["relatorio"] == "pronto" and r["confianca"] != "baixa":
+        st = f'<span class="sx-status quiet">Pronto · confiança {esc(r["confianca"])}</span>'
     else:
-        st_cor, st_txt = "#C3CBD6", "Em preparação"
-    return (f'<div class="sx-row"><div>{anel(r["risco"])}</div>'
-            f'<div class="sx-who"><b>{esc(r["nome"])}</b><small>{esc(r["creator_id"])}</small>'
-            f'<div class="sx-tags">{tags(r["sinais"], r["so_modelo"])}</div></div>'
-            f'<div class="sx-cell"><small>Saque</small><b>{esc(r["valor"])}</b></div>'
-            f'<div class="sx-cell hide-sm"><small>{"Situação" if r.get("horas") is None else "Prazo restante"}</small>{prazo}</div>'
-            f'<div class="sx-cell hide-sm"><small>Relatório</small><span class="sx-status"><i style="background:{st_cor}"></i>'
-            f'{esc(st_txt)}</span></div></div>')
+        st_cor, st_txt = {"pronto": ("#E9A23B", "Confiança baixa · revisar"),
+                          "parcial": ("#E9A23B", "Parcial · revisar")}.get(r["relatorio"], ("#C3CBD6", "Em preparação"))
+        st = f'<span class="sx-status"><i style="background:{st_cor}"></i>{esc(st_txt)}</span>'
+    return (f'<div class="sx-row">{cabeca}'
+            f'<div class="sx-cell hide-sm"><small>Prazo restante</small>{prazo}</div>'
+            f'<div class="sx-cell hide-sm"><small>Relatório</small>{st}</div></div>')
 
 
 def cabecalho_caso(nome: str, creator_id: str, meta: list[tuple[str, str]], risco: float,
@@ -324,8 +338,9 @@ def cabecalho_caso(nome: str, creator_id: str, meta: list[tuple[str, str]], risc
             f'{medidor(risco, modelo, regras)}</div></div>')
 
 
-def fatos(cartoes: list[str]) -> str:
-    return f'<div class="sx-facts">{"".join(cartoes)}</div>'
+def fatos(cartoes: list[str], colunas: str | None = None) -> str:
+    estilo = f' style="grid-template-columns:{colunas}"' if colunas else ""
+    return f'<div class="sx-facts"{estilo}>{"".join(cartoes)}</div>'
 
 
 def fato(rotulo: str, conteudo: str, ic: str, atraso: int = 0) -> str:
@@ -333,26 +348,30 @@ def fato(rotulo: str, conteudo: str, ic: str, atraso: int = 0) -> str:
             f'{conteudo}</div>')
 
 
-def recomendacao(rec: str) -> str:
+def recomendacao(rec: str, nivel: str) -> str:
+    """Recomendação e confiança juntas: é o que o analista vai confirmar ou contestar."""
     if rec == "LIBERAR":
-        return f'<div style="margin-top:6px"><span class="sx-pill free">{icon("check", 14)}Liberar saque</span></div>'
-    return f'<div style="margin-top:6px"><span class="sx-pill hold">{icon("shield", 14)}Manter retido</span></div>'
+        pill = f'<span class="sx-pill free">{icon("check", 15)}Liberar saque</span>'
+    else:
+        pill = f'<span class="sx-pill hold">{icon("shield", 15)}Manter retido</span>'
+    return f'<div class="sx-rec">{pill}<div class="conf">{confianca(nivel)}</div></div>'
 
 
 def confianca(nivel: str) -> str:
     n = {"BAIXA": 1, "MEDIA": 2, "ALTA": 3}.get(nivel, 0)
-    nome = {"BAIXA": "Baixa", "MEDIA": "Média", "ALTA": "Alta"}.get(nivel, "—")
+    nome = {"BAIXA": "baixa", "MEDIA": "média", "ALTA": "alta"}.get(nivel, "—")
     barras = "".join(f'<i class="{"on" if i < n else ""}"></i>' for i in range(3))
-    return f'<b>{nome}</b><div class="sx-meter">{barras}</div>'
+    return f'<b>Confiança {nome}</b><div class="sx-meter">{barras}</div>'
 
 
 def aviso(texto: str, tipo: str = "warn") -> str:
     return f'<div class="sx-note {"info" if tipo == "info" else ""}">{icon("info", 17)}<div>{texto}</div></div>'
 
 
-def cartao(eyebrow: str, corpo_html: str, ic: str = "file", atraso: int = 0) -> str:
-    return (f'<div class="sx-card" style="animation-delay:{atraso}ms"><div class="eyebrow">{icon(ic, 13)}{esc(eyebrow)}</div>'
-            f'{corpo_html}</div>')
+def cartao(corpo_html: str, atraso: int = 0) -> str:
+    """Cartão sem rótulo interno: o título da seção, logo acima, já diz o que há dentro.
+    (Título + rótulo em caixa alta repetindo a mesma ideia era um vício visual.)"""
+    return f'<div class="sx-card" style="animation-delay:{atraso}ms">{corpo_html}</div>'
 
 
 def prova(n: int, texto: str) -> str:

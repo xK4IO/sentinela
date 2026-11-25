@@ -29,6 +29,13 @@ Antes de mexer em algo, me diga em 3 linhas o que entendeu do estado atual.
 2. A decisão de teste foi apagada (`resetar_demo()`): 0 revisões, 90 saques retidos, 90 relatórios. Os 56 testes passaram.
 3. `CLAUDE.md`, `ESTADO.md` e o banco limpo foram commitados. **Falta o `git push`**, que o usuário faz no terminal dele.
 4. Nenhum processo fica rodando entre sessões. O Streamlit local precisa ser iniciado de novo (ver comandos no `CLAUDE.md`).
+5. **25/11 (tarde): revisão de UX aplicada, ainda sem commit.** Uma crítica por prints virou ajustes em `app/`:
+   fila desempata o risco pelo prazo, só a exceção ganha cor no status do relatório, filtro de valor por faixas,
+   recomendação e confiança juntas no caso, sem rótulos internos duplicados nos cartões, rede vazia numa linha só,
+   Observação sem colunas repetidas, Resultados sem "retido sem necessidade" entre os tipos de fraude e com a frase
+   "a IA teria liberado 7 fraudadores", texto da IA limpo na exibição (chargeback → contestação de cartão, sem
+   "(prova N)" dentro da própria prova, dias sem decimais). Mais 4 testes (`tests/test_texto_cliente.py`): 60 passam.
+   **Falta o usuário revisar no localhost e aprovar antes do commit e do push.**
 
 ## Git
 
