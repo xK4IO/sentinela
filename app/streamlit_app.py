@@ -344,9 +344,10 @@ def pagina_decididos():
 
 def pagina_resultados():
     m = _metricas()
-    st.html(U.aviso("Nesta demonstração já sabemos quais casos eram fraude de verdade, então é possível medir "
-                    "exatamente o acerto do Sentinela. Em produção, esse resultado vem das fraudes confirmadas depois.",
-                    "info"))
+    # O argumento central para manter o humano no circuito abre a tela, dito com todas as letras.
+    st.html(U.aviso(f'<b>Seguida sem revisão, a análise automática teria liberado {m["ia_liberou_fraude"]} '
+                    f'fraudadores.</b> Por isso ela só recomenda: a decisão final é sempre do analista, que confere '
+                    f'os dados de origem de cada prova.'))
     st.html(U.titulo("Proteção", f"{m['avaliados']:,} saques avaliados".replace(",", ".")))
     st.html(U.kpis([
         U.kpi("Fraudes identificadas", U.pct(m["recall"]), f"{m['tp']} de {m['tp'] + m['fn']} casos · meta 85%",
@@ -386,11 +387,7 @@ def pagina_resultados():
             ("Fraudes com recomendação de manter retido", m["ia_reteve_fraude"], f),
             ("Retidos sem necessidade com recomendação de liberar", m["ia_liberou_legit"], lg),
         ], cor=U.LIME)
-        # O argumento central para manter o humano no circuito: dito com todas as letras, não só numa barra.
-        destaque = (f'<div class="sx-note" style="margin-top:16px"><div><b>Seguida sem revisão, a análise automática '
-                    f'teria liberado {m["ia_liberou_fraude"]} fraudadores.</b> Por isso ela só recomenda: a decisão '
-                    f'final é sempre do analista, que confere os dados de origem de cada prova.</div></div>')
-        st.html(U.cartao(corpo + destaque))
+        st.html(U.cartao(corpo))
 
 
 # ---------------------------------------------------------------------------- roteamento

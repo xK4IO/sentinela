@@ -5,3 +5,12 @@ __pycache__/
 .streamlit/secrets.toml
 .pytest_cache/
 .ipynb_checkpoints/
+
+# vídeo de apresentação: só o código-fonte e os assets leves vão para o git
+video/work/
+video/snaps*/
+video/renders/
+video/.hyperframes/
+video/render.log
+video/assets/*.wav
+WhatsApp Audio*.mp4

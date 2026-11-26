@@ -1,0 +1,124 @@
+/* Identidade do vídeo: paleta da YouShop / Sentinela (a mesma da ferramenta). */
+@font-face { font-family: "Jakarta"; src: url("assets/fonts/PlusJakartaSans.ttf") format("truetype"); font-weight: 200 800; }
+@font-face { font-family: "Mono"; src: url("assets/fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; }
+
+:root {
+  --canvas: #0F1D35;   /* azul-marinho profundo */
+  --surface: #1B2F52;  /* azul-marinho YouShop */
+  --line: #2C4775;
+  --ink: #F5F7FA;      /* fundo da ferramenta vira texto */
+  --muted: #A7B4C9;
+  --accent: #8CD43A;   /* verde-limão YouShop: um foco por cena */
+  --soft: #C9EE9F;
+  --risk: #E5524C;     /* só para fraude */
+  --amber: #E9A23B;    /* retido */
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--canvas); }
+#root { width: 100%; height: 100%; position: relative; overflow: hidden; background: var(--canvas);
+  font-family: "Jakarta", sans-serif; color: var(--ink); }
+
+/* fundo: brilho verde no topo, azul embaixo, grade de 90 px que desliza a cada corte */
+#glow { position: absolute; inset: 0;
+  background: radial-gradient(900px 700px at 50% -8%, rgba(140,212,58,.16), transparent 70%),
+              radial-gradient(1000px 800px at 50% 112%, rgba(60,110,190,.35), transparent 70%); }
+#grid { position: absolute; top: 0; left: -450px; width: 1980px; height: 1920px; opacity: .5;
+  background-image: linear-gradient(rgba(167,180,201,.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(167,180,201,.08) 1px, transparent 1px);
+  background-size: 90px 90px; }
+
+/* HUD e progresso */
+#hud { position: absolute; top: 120px; left: 90px; right: 90px; display: flex; align-items: center; gap: 16px;
+  font-family: "Mono"; font-size: 28px; letter-spacing: .12em; color: var(--muted); }
+#hud img { width: 44px; height: 44px; border-radius: 11px; }
+#hud b { color: var(--ink); font-weight: 600; }
+#prog { position: absolute; left: 0; bottom: 0; width: 1080px; height: 8px; background: var(--accent); }
+
+/* cenas */
+.clip { position: absolute; inset: 0; }
+.wrap { position: absolute; left: 90px; right: 90px; top: 270px; height: 1090px;
+  display: flex; flex-direction: column; gap: 34px; }
+.rv { opacity: 0; }
+.chip { display: flex; align-items: center; gap: 16px; font-family: "Mono"; font-size: 28px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted); }
+.chip i { font-style: normal; background: var(--accent); color: var(--canvas); font-weight: 700; padding: 6px 12px;
+  border-radius: 8px; letter-spacing: .04em; }
+h1, h2 { font-weight: 800; letter-spacing: -0.03em; line-height: 1.04; }
+h1 { font-size: 104px; }
+h2 { font-size: 72px; }
+.w { display: inline-block; opacity: 0; margin-right: .22em; }
+.lime { color: var(--accent); }
+.red { color: var(--risk); }
+.muted { color: var(--muted); }
+.card { background: rgba(27,47,82,.82); border: 2px solid var(--line); border-radius: 28px; padding: 34px 38px; }
+.mono { font-family: "Mono"; }
+.big { font-size: 150px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+
+/* s1: creators como pontos */
+.dots { display: grid; grid-template-columns: repeat(8, 1fr); gap: 26px; width: 820px; margin: 40px auto 0; }
+.dot { width: 72px; height: 72px; border-radius: 50%; background: var(--line); opacity: 0; }
+
+/* s2: tipos de fraude */
+.tipo { display: flex; align-items: center; gap: 30px; font-size: 54px; font-weight: 700; }
+.tipo svg { flex: none; }
+.perda { display: flex; align-items: baseline; gap: 24px; margin-top: 20px; }
+
+/* s3: fluxo do saque */
+.logo-big { width: 190px; height: 190px; border-radius: 44px; }
+.fluxo { display: flex; flex-direction: column; gap: 22px; margin-top: 10px; }
+.etapa { display: flex; align-items: center; justify-content: space-between; font-size: 44px; font-weight: 700; }
+.badge { font-family: "Mono"; font-size: 34px; font-weight: 700; padding: 10px 20px; border-radius: 14px; letter-spacing: .06em; }
+.badge.ret { background: rgba(233,162,59,.18); color: var(--amber); border: 2px solid var(--amber); }
+.badge.no { background: rgba(229,82,76,.12); color: var(--risk); border: 2px solid var(--risk); text-decoration: line-through; }
+.doc { display: flex; flex-direction: column; gap: 14px; font-size: 36px; }
+.doc .p { display: flex; gap: 16px; align-items: center; }
+.doc .p b { background: var(--ink); color: var(--canvas); border-radius: 9px; padding: 2px 12px; font-size: 28px; }
+
+/* s4: camadas */
+.camada { display: flex; align-items: center; gap: 30px; }
+.camada .n { flex: none; width: 108px; height: 108px; border-radius: 26px; background: var(--surface); border: 2px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight: 800; color: var(--accent); }
+.camada h3 { font-size: 52px; font-weight: 800; letter-spacing: -0.02em; }
+.camada p { font-size: 32px; color: var(--muted); margin-top: 4px; }
+.ok { display: flex; align-items: center; gap: 22px; font-size: 42px; font-weight: 700; color: var(--accent); }
+
+/* s5: telas reais */
+.palco { position: relative; height: 880px; }
+.tela { position: absolute; left: 50%; top: 0; border-radius: 26px; overflow: hidden; opacity: 0;
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.6); border: 2px solid rgba(245,247,250,.12); }
+.tela img { display: block; width: 100%; }
+.legenda-tela { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 38px; font-weight: 700; opacity: 0; }
+
+/* s6: aprendizados */
+.apr { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px 26px; padding: 30px 36px; }
+.apr h3 { font-size: 40px; font-weight: 800; }
+.apr p { font-size: 30px; color: var(--muted); grid-column: 1; }
+.apr .v { grid-row: span 2; font-size: 88px; font-weight: 800; letter-spacing: -0.03em; }
+.risco { position: relative; display: inline-block; }
+.risco::after { content: ""; position: absolute; left: -6px; right: -6px; top: 52%; height: 8px; background: var(--risk);
+  transform-origin: left; transform: scaleX(var(--s, 0)); }
+.barra { height: 22px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 10px; grid-column: 1; }
+.barra i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: 99px; }
+
+/* s7: resultados */
+.num { display: flex; align-items: baseline; gap: 26px; }
+.num b { white-space: nowrap; font-size: 120px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.num > span { font-size: 38px; font-weight: 600; color: var(--muted); }
+.cmp { display: flex; flex-direction: column; gap: 18px; }
+.cmp .l { display: flex; justify-content: space-between; font-size: 36px; font-weight: 700; }
+.cmp .t { height: 34px; border-radius: 12px; background: rgba(44,71,117,.6); }
+.cmp .t i { display: block; height: 100%; border-radius: 12px; }
+
+/* s9: clímax */
+.sete { font-size: 560px; font-weight: 800; line-height: .9; letter-spacing: -0.06em; color: var(--accent);
+  text-shadow: 0 0 120px rgba(140,212,58,.45); text-align: center; }
+
+/* s10: assinatura */
+.ass { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 26px; margin-top: 60px; }
+.traco { width: 0; height: 6px; background: var(--accent); border-radius: 6px; }
+
+/* legendas: trilho embaixo, uma frase curta por vez */
+.cap { position: absolute; inset: auto; left: 90px; right: 90px; top: 1385px; display: flex; justify-content: center; align-items: flex-start; }
+.cap span { display: inline-block; background: rgba(15,29,53,.78); border: 2px solid rgba(245,247,250,.10);
+  border-radius: 18px; padding: 14px 26px; font-size: 44px; font-weight: 700; line-height: 1.25; text-align: center; opacity: 0; max-width: 900px; }
+.cap em { font-style: normal; color: var(--accent); }

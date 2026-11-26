@@ -35,7 +35,15 @@ Antes de mexer em algo, me diga em 3 linhas o que entendeu do estado atual.
    Observação sem colunas repetidas, Resultados sem "retido sem necessidade" entre os tipos de fraude e com a frase
    "a IA teria liberado 7 fraudadores", texto da IA limpo na exibição (chargeback → contestação de cartão, sem
    "(prova N)" dentro da própria prova, dias sem decimais). Mais 4 testes (`tests/test_texto_cliente.py`): 60 passam.
-   **Falta o usuário revisar no localhost e aprovar antes do commit e do push.**
+   Commitado em `263a614` (é a versão atual da interface).
+6. **25/11 (noite):** a skill `impeccable` foi instalada em `~/.claude/skills/impeccable` e `/impeccable critique`
+   deu 24/40. Uma rodada de ajustes baseada nela (decisão fixa ao lado, sem cartões, tese em faixa em Resultados etc.)
+   foi **rejeitada pelo usuário e descartada**. Não reaplicar sem pedido explícito.
+7. **25/11 (noite): vídeo de apresentação v1 pronto** em `video/renders/sentinela-youshop.mp4` (1080x1920, 2 min 11 s,
+   −15,9 LUFS). Roteiro em `docs/roteiro-video.md`, gravado pelo usuário. Fonte do vídeo em `video/`:
+   `editar_voz.py` (corta pausas), `transcrever.py` (faster-whisper), `alinhar.py`, `trilha.py` (música original),
+   `gen.py` + `style.css` + `timeline.js` (HyperFrames). Paleta e logo do Sentinela. Os arquivos pesados ficam no `.gitignore`.
+   Resultados ainda não commitados: o banner de Resultados ("7 fraudadores" no topo) em `app/streamlit_app.py` e a pasta `video/`.
 
 ## Git
 
