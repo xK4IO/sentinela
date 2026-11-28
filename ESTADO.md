@@ -58,7 +58,7 @@ Se testar decisões na demo local, rode de novo "Reiniciar demonstração" antes
 ## Próximos passos (em ordem)
 1. O usuário roda `git push` e confere no GitHub que os 3 commits subiram.
 2. Deploy no Streamlit Community Cloud (o usuário faz pelo site):
-   repo `xK4IO/sentinela` · branch `main` · arquivo `app/streamlit_app.py` · Python 3.12 · **sem secrets**.
+   repo `caio-esteves/sentinela` · branch `main` · arquivo `app/streamlit_app.py` · Python 3.12 · **sem secrets**.
    Depois, abra o link público e confira as 4 abas e um caso.
 3. Slides: 12, conforme o mapa da seção 12.3 da doc técnica. Material pronto em `docs/recalibracao.md`,
    `docs/agente.md`, `README.md` e na aba Resultados. Formato (PDF, Google Slides etc.) a combinar com o usuário.

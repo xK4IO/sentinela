@@ -6,7 +6,7 @@ cada pedido de saque de creator **antes de o dinheiro sair**. Quando há sinais 
 **Quem decide é sempre um humano.** Todos os dados são sintéticos (semente 42).
 
 - Entrega: **29/11/2026 às 23:59**, em slides e vídeo. O formato final ainda não foi fechado.
-- Repositório: https://github.com/xK4IO/sentinela (deploy previsto no Streamlit Community Cloud).
+- Repositório: https://github.com/caio-esteves/sentinela · app: https://sentinela-youshop-caioesteves.streamlit.app/.
 - Especificação de origem: `sentinela-doc-tecnica.md` e `sentinela-doc-negocio.md`, que ficam fora do repo.
   Os desvios dessas specs estão registrados em `docs/`.
 - **Onde paramos e próximos passos: leia `ESTADO.md` no início de toda sessão e atualize-o no fim.**
